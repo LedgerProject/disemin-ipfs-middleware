@@ -1,6 +1,9 @@
+const _ = require('lodash')
 const compression = require('compression')
+const error = require('http-errors')
 const express = require('express')
 const logger = require('winston')
+const moment = require('moment')
 const ipfs = require('./ipfs')
 const timeout = require('connect-timeout')
 
@@ -20,10 +23,33 @@ router.use(timeout('600s'), (req, res, next) => {
 // Handle IPFS hash requests
 router.use('/ipfs/:hash', (req, res, next) => {
   let hash = req.params.hash
+
   logger.log('info', `Received hash ${hash}`)
-  ipfs.hashToPath(hash)
-    .then(data => res.status(200).send(data))
-    .catch(err => next(err))
+
+  // Return error if hash is not valid
+  if (!ipfs.isValid(hash)) {
+    return next(error(400, 'Invalid IPFS hash. Must be exactly 46 bt'))
+  }
+
+  // Get data from IPFS
+  ipfs.getTelemetryData(hash)
+    .then(data => {
+      // Create filename from telemetry data
+      let filename = `/${data.geohash}/${moment(data.ts).format('YYYYMMDD_HHmmssSSS')}.json`
+
+      logger.log('info', `Copying ${hash} to ${filename}`)
+
+      // Copy data to MFS
+      return ipfs.copy(hash, filename)
+    })
+    .then(() => {
+      logger.log('info', 'Publishing updated root folder hash to IPNS')
+      return ipfs.update()
+    })
+    .catch(err => {
+      logger.log('error', 'Failed to process request.', err)
+      next(error(500, err.message))
+    })
 })
 
 module.exports = router

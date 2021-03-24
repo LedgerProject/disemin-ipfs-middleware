@@ -17,7 +17,7 @@ describe('IPFS Tests', function () {
   })
 
   it('Get data from IPFS hash', function (done) {
-    ipfs.getData('QmTy3hR2pPWj7mVdFXUmcCqw6xLutQtX8K2HquzXRc1wGP')
+    ipfs.getData('QmeQrHi9zbEQgGAHyfCSXREeHDuF8ctdUGYGVAZARqgcRA')
       .then(data => {
         console.log(`Data: ${JSON.stringify(data)}`)
         done()
@@ -26,26 +26,25 @@ describe('IPFS Tests', function () {
   })
 
   it('Copy file to MFS', function (done) {
-    ipfs.cp('QmTy3hR2pPWj7mVdFXUmcCqw6xLutQtX8K2HquzXRc1wGP')
+    ipfs.copy('QmeQrHi9zbEQgGAHyfCSXREeHDuF8ctdUGYGVAZARqgcRA')
       .then(() => done())
       .catch(err => done(err))
   })
 
-  it('Test flow', function (done) {
+  it('Test all flow', function (done) {
     ipfs.getRootHash()
       .then(hash => {
         console.log(`Root folder hash: ${hash}`)
         return hash
       })
-      .then(() => ipfs.cp('QmTy3hR2pPWj7mVdFXUmcCqw6xLutQtX8K2HquzXRc1wGP'))
+      .then(() => ipfs.copy('QmeQrHi9zbEQgGAHyfCSXREeHDuF8ctdUGYGVAZARqgcRA'))
       .then(() => ipfs.getRootHash())
       .then(hash => {
         console.log(`Root folder new hash: ${hash}`)
         return hash
       })
-      .then(hash => ipfs.publish(hash))
+      .then(() => ipfs.update())
       .then(() => done())
       .catch(err => done(err))
   }).timeout(moment.duration(10, 'minutes').asMilliseconds())
-
 })

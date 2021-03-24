@@ -2,6 +2,7 @@ const _ = require('lodash')
 const axios = require('axios')
 const logger = require('winston')
 const moment = require('moment')
+const path = require('path')
 
 // Root folder
 const ROOT_FOLDER = '/weather'
@@ -14,22 +15,41 @@ const client = axios.create({
   }
 })
 
+/**
+ * Return true if it's a valid IPFS hash.
+ */
 function isValid (hash) {
   return _.size(hash) === 46
 }
 
+/**
+ * Return true if the data object contains valid telemetry data.
+ */
 function isTelemetry (data) {
   return _.has(data, 'ts') && _.has(data, 'values') && _.has(data, 'geohash')
 }
 
+/**
+ * Get the IPFS hash of the root folder.
+ */
 function getRootHash () {
   return client.post(`/api/v0/files/stat?arg=${ROOT_FOLDER}`)
     .then(response => _.get(response, 'data.Hash'))
 }
 
+/**
+ * Get IPFS hash contents (cat).
+ */
 function getData (hash) {
   return client.post(`/api/v0/cat?arg=${hash}`)
     .then(response => response.data)
+}
+
+/**
+ * Get IPFS hash contents (cat) and fail if not valid telemetry data.
+ */
+function getTelemetryData (hash) {
+  return getData(hash)
     .then(data => {
       // Sometimes the hashes are strings...
       if (_.isString(data)) {
@@ -65,27 +85,30 @@ function getData (hash) {
     })
 }
 
-function cp (hash, filename = `${moment().format('YYYYMMDD_HHmmssSSS')}.json`) {
+/**
+ * Copy file with the given IPFS hash to MFS, using the provided filename.
+ * Filename defaults to YYYYMMDD_HHmmssSSS.json, using the current timestamp.
+ */
+function copy (hash, filename = `${moment().format('YYYYMMDD_HHmmssSSS')}.json`) {
   let source = `/ipfs/${hash}`
-  let destination = `${ROOT_FOLDER}/${filename}`
+  let destination = path.join(ROOT_FOLDER, filename)
   return client.post(`/api/v0/files/cp?arg=${source}&arg=${destination}`)
     .then(response => response.data)
 }
 
-function publishRoot () {
-  return getRootHash().then(hash => publish(hash))
-}
-
+/**
+ * Publish hash to IPNS
+ */
 function publish (hash) {
   return client.post(`/api/v0/name/publish?arg=${hash}`)
     .then(response => response.data)
 }
 
-module.exports = {
-  isValid: isValid,
-  getRootHash: getRootHash,
-  getData: getData,
-  cp: cp,
-  publish: publish,
-  publishRoot: publishRoot
+/**
+ * Update IPNS with the latest root folder hash
+ */
+function update () {
+  return getRootHash().then(hash => publish(hash))
 }
+
+module.exports = { isValid, getData, getTelemetryData, copy, update, getRootHash }
