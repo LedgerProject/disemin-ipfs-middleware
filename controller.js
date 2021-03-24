@@ -46,6 +46,7 @@ router.use('/ipfs/:hash', (req, res, next) => {
       logger.log('info', 'Publishing updated root folder hash to IPNS')
       return ipfs.update()
     })
+    .then(published => res.json(published))
     .catch(err => {
       logger.log('error', 'Failed to process request.', err)
       next(error(500, err.message))

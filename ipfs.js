@@ -15,6 +15,10 @@ const client = axios.create({
   }
 })
 
+function throwWithMessage (error, message) {
+  throw new Error(`${message}. ${error.message}`)
+}
+
 /**
  * Return true if it's a valid IPFS hash.
  */
@@ -30,11 +34,21 @@ function isTelemetry (data) {
 }
 
 /**
+ * Crate all dirs in path, if necessary
+ */
+function createDirs (path) {
+  return client.post(`/api/v0/files/mkdir?arg=${path}&parents=true`)
+    .then(response => response.data)
+    .catch(err => throwWithMessage(err, `Could not create path [${path}]`))
+}
+
+/**
  * Get the IPFS hash of the root folder.
  */
 function getRootHash () {
   return client.post(`/api/v0/files/stat?arg=${ROOT_FOLDER}`)
     .then(response => _.get(response, 'data.Hash'))
+    .catch(err => throwWithMessage(err, `Could not get root folder [${ROOT_FOLDER}] hash`))
 }
 
 /**
@@ -43,6 +57,7 @@ function getRootHash () {
 function getData (hash) {
   return client.post(`/api/v0/cat?arg=${hash}`)
     .then(response => response.data)
+    .catch(err => throwWithMessage(err, `Could not get hash data [${hash}]`))
 }
 
 /**
@@ -92,8 +107,12 @@ function getTelemetryData (hash) {
 function copy (hash, filename = `${moment().format('YYYYMMDD_HHmmssSSS')}.json`) {
   let source = `/ipfs/${hash}`
   let destination = path.join(ROOT_FOLDER, filename)
-  return client.post(`/api/v0/files/cp?arg=${source}&arg=${destination}`)
-    .then(response => response.data)
+  return createDirs(path.dirname(destination))
+    .then(
+      () => client.post(`/api/v0/files/cp?arg=${source}&arg=${destination}`)
+        .then(response => response.data)
+        .catch(err => throwWithMessage(err, `Could not copy ${source} to ${destination}`))
+    )
 }
 
 /**
@@ -102,6 +121,7 @@ function copy (hash, filename = `${moment().format('YYYYMMDD_HHmmssSSS')}.json`)
 function publish (hash) {
   return client.post(`/api/v0/name/publish?arg=${hash}`)
     .then(response => response.data)
+    .catch(err => throwWithMessage(err, `Could not publish hash ${hash} to IPNS`))
 }
 
 /**
