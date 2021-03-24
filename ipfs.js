@@ -105,33 +105,43 @@ function getTelemetryData (hash) {
 
 /**
  * Copy file with the given IPFS hash to MFS, using the provided filename.
+ * Then update the 'latest.json' file in the last dir of the path.
  * Filename defaults to YYYYMMDD_HHmmssSSS.json, using the current timestamp.
  */
 function copy (hash, filename = `${moment().format('YYYYMMDD_HHmmssSSS')}.json`) {
-  let source = `/ipfs/${hash}`
+  // Destination absolute path
   let destination = path.join(ROOT_FOLDER, filename)
+  // Destination dir path
   let dirs = path.dirname(destination)
+  // Destination dir latest.json file
+  let latest = path.join(dirs, LATEST_FILE)
+  // Create directories in path, if missing
   return createDirs(dirs)
-    // Copy with proper filename
-    .then(() => {
-      return client.post(`/api/v0/files/cp?arg=${source}&arg=${destination}`)
-        .then(response => response.data)
-        .catch(err => throwWithMessage(err, `Could not copy ${source} to ${destination}`))
-    })
-    // Copy as latest.json for faster retrieval
-    .then(() => {
-      let latest = path.join(dirs, LATEST_FILE)
-      return client.post(`/api/v0/files/cp?arg=${source}&arg=${latest}`)
-        .then(response => response.data)
-        .catch(err => throwWithMessage(err, `Could not copy ${source} to ${latest}`))
-    })
+    // Copy hash contents to destination file
+    .then(() => cp(hash, destination))
+    // Delete previous latest.json file
+    .then(() => rm(latest))
+    // Copy hash contents to latest.json file
+    .then(() => cp(hash, latest))
+}
+
+function cp (hash, path) {
+  return client.post(`/api/v0/files/cp?arg=/ipfs/${hash}&arg=${path}`)
+    .then(response => response.data)
+    .catch(err => throwWithMessage(err, `Could not copy ${hash} to ${path}`))
+}
+
+function rm (path) {
+  return client.post(`/api/v0/files/rm?arg=${path}`)
+    .then(response => response.data)
+    .catch(err => err.response.data)
 }
 
 /**
  * Publish hash to IPNS
  */
-function publish (hash) {
-  return client.post(`/api/v0/name/publish?arg=${hash}`)
+function publish (hash, lifetime = `${moment.duration(10, 'years').asHours()}h`) {
+  return client.post(`/api/v0/name/publish?arg=${hash}&lifetime=${lifetime}&allow-offline=true`)
     .then(response => response.data)
     .catch(err => throwWithMessage(err, `Could not publish hash ${hash} to IPNS`))
 }
