@@ -7,6 +7,9 @@ const path = require('path')
 // Root folder
 const ROOT_FOLDER = '/weather'
 
+// Latest file name
+const LATEST_FILE = 'latest.json'
+
 // Configure http client
 const client = axios.create({
   baseURL: process.env.IPFS_URL,
@@ -107,12 +110,21 @@ function getTelemetryData (hash) {
 function copy (hash, filename = `${moment().format('YYYYMMDD_HHmmssSSS')}.json`) {
   let source = `/ipfs/${hash}`
   let destination = path.join(ROOT_FOLDER, filename)
-  return createDirs(path.dirname(destination))
-    .then(
-      () => client.post(`/api/v0/files/cp?arg=${source}&arg=${destination}`)
+  let dirs = path.dirname(destination)
+  return createDirs(dirs)
+    // Copy with proper filename
+    .then(() => {
+      return client.post(`/api/v0/files/cp?arg=${source}&arg=${destination}`)
         .then(response => response.data)
         .catch(err => throwWithMessage(err, `Could not copy ${source} to ${destination}`))
-    )
+    })
+    // Copy as latest.json for faster retrieval
+    .then(() => {
+      let latest = path.join(dirs, LATEST_FILE)
+      return client.post(`/api/v0/files/cp?arg=${source}&arg=${latest}`)
+        .then(response => response.data)
+        .catch(err => throwWithMessage(err, `Could not copy ${source} to ${latest}`))
+    })
 }
 
 /**
