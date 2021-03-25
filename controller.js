@@ -1,4 +1,5 @@
 const _ = require('lodash')
+const chainlink = require('./chainlink')
 const compression = require('compression')
 const error = require('http-errors')
 const express = require('express')
@@ -13,7 +14,6 @@ const router = express.Router()
 // Misc middleware
 router.use(compression())
 router.use(express.json())
-router.use(express.urlencoded({ extended: false }))
 
 // Add middleware for request timeout after 10 minutes (IPNS operations take loooong time)
 router.use(timeout('600s'), (req, res, next) => {
@@ -21,7 +21,7 @@ router.use(timeout('600s'), (req, res, next) => {
 })
 
 // Handle IPFS hash requests
-router.post('/ipfs/:hash', (req, res, next) => {
+router.use('/ipfs/:hash', (req, res, next) => {
   let hash = req.params.hash
 
   logger.log('info', `Received hash ${hash}`)
@@ -59,6 +59,25 @@ router.get('/weather/:geohash/latest', (req, res, next) => {
   logger.log('info', `Getting latest for ${geohash}`)
   return ipfs.getLatest(geohash)
     .then(data => res.json(data))
+    .catch(err => {
+      logger.log('error', `Failed to get latest for ${geohash}`, err)
+      next(error(500, err.message))
+    })
+})
+
+// Handle Chainlink data requests
+router.post('/chainlink', chainlink.validator(), (req, res, next) => {
+  let geohash = _.get(req, 'body.data.geohash')
+
+  if (_.isNil(geohash)) {
+    return next(error(400, `Required param 'data.geohash' is missing`))
+  }
+
+  return ipfs.getLatest(geohash)
+    .then(data => res.json({
+      jobRunID: req.body.id,
+      data: data
+    }))
     .catch(err => {
       logger.log('error', `Failed to get latest for ${geohash}`, err)
       next(error(500, err.message))
