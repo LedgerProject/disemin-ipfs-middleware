@@ -52,7 +52,7 @@ function toTelemetry (data) {
 function toWeather (telemetry) {
   return Promise.resolve({
     date: moment(telemetry.ts).toISOString(),
-    geohash: telemetry.data.geohash,
+    geohash: telemetry.values.geohash,
     temperature: _.round(telemetry.values.fo_temp, 1),
     wind_gust: _.round(telemetry.values.fo_w_gust, 1)
   })
