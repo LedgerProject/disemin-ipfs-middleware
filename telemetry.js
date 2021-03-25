@@ -6,7 +6,7 @@ const moment = require('moment')
  * Return true if the data object contains valid telemetry data.
  */
 function isTelemetry (data) {
-  return _.has(data, 'ts') && _.has(data, 'values') && _.has(data, 'geohash')
+  return _.has(data, 'ts') && _.has(data, 'values')
 }
 
 /**
@@ -52,7 +52,7 @@ function toTelemetry (data) {
 function toWeather (telemetry) {
   return Promise.resolve({
     date: moment(telemetry.ts).toISOString(),
-    geohash: telemetry.geohash,
+    geohash: telemetry.data.geohash,
     temperature: _.round(telemetry.values.fo_temp, 1),
     wind_gust: _.round(telemetry.values.fo_w_gust, 1)
   })

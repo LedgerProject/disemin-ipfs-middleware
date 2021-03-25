@@ -34,8 +34,14 @@ router.use('/ipfs/:hash', (req, res, next) => {
   // Get data from IPFS
   ipfs.getTelemetryData(hash)
     .then(data => {
+      let geohash = data.geohash
+
+      if (_.isNil(geohash)) {
+        return next(error(400, `Required 'geohash' parameter is missing from the telemetry payload`))
+      }
+
       // Create filename from telemetry data
-      let filename = `/${data.geohash}/${moment(data.ts).format('YYYYMMDD_HHmmssSSS')}.json`
+      let filename = `/${geohash}/${moment(data.ts).format('YYYYMMDD_HHmmssSSS')}.json`
 
       logger.log('info', `Copying ${hash} to ${filename}`)
 
