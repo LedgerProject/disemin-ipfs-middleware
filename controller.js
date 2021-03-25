@@ -34,10 +34,10 @@ router.use('/ipfs/:hash', (req, res, next) => {
   // Get data from IPFS
   ipfs.getTelemetryData(hash)
     .then(data => {
-      let geohash = data.geohash
+      let geohash = _.get(data, 'values.geohash')
 
       if (_.isNil(geohash)) {
-        return next(error(400, `Required 'geohash' parameter is missing from the telemetry payload`))
+        throw error(400, `Required 'geohash' parameter is missing from the telemetry payload`)
       }
 
       // Create filename from telemetry data
@@ -55,7 +55,7 @@ router.use('/ipfs/:hash', (req, res, next) => {
     .then(published => res.json(published))
     .catch(err => {
       logger.log('error', `Failed to process hash ${hash}`, err)
-      next(error(500, err.message))
+      next(error(err.status || 500, err.message))
     })
 })
 
