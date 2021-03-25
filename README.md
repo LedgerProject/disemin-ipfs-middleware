@@ -49,12 +49,12 @@ The app is dockerized, so you can run with Docker.
 3. Run docker image
 
    ```shell
-   docker run -p 3001:3001 -d --restart=unless-stopped agroxm-ipfs-middleware -e IPFS_URL=<your-ipfs-node-url> -e PORT=3001
+   docker run -p 3001:3001 -d --restart=unless-stopped -e IPFS_URL=<your-ipfs-node-url> -e PORT=3001 agroxm-ipfs-middleware
    ```
 
    Alternatively, if you want to specify a different port for the server (e.g. `8080`) to run on in the container, and a
    different port for the host to expose (e.g. `5000`), run the following:
 
    ```shell
-   docker run -p 5000:8080 -d --restart=unless-stopped agroxm-ipfs-middleware -e IPFS_URL=<your-ipfs-node-url> -e PORT=8080
+   docker run -p 5000:8080 -d --restart=unless-stopped -e IPFS_URL=<your-ipfs-node-url> -e PORT=8080 agroxm-ipfs-middleware
    ```
