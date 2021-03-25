@@ -48,9 +48,10 @@ app.use(function (err, req, res, next) {
 })
 
 // Start server
+const host = process.env.HOST || '127.0.0.1'
 const port = process.env.PORT || 3001
-app.listen(port, function () {
-  logger.log('info', 'API server listening on port %s', port)
+app.listen(port, host, function () {
+  logger.log('info', `Server listening on http://${host}:${port}`)
 })
 
 module.exports = app
