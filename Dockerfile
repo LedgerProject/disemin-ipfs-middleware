@@ -1,13 +1,13 @@
 FROM node:14-alpine
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /agroxm-ipfs-middleware
 
 # Copy both package.json AND package-lock.json, where available
-COPY package*.json ./
+COPY ["package.json", "package-lock.json*", "./"]
 
 # Install app dependencies
-RUN npm install
+RUN npm install --quiet
 
 # Bundle app source code
 COPY . .

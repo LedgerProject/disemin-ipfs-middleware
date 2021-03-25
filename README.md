@@ -26,8 +26,8 @@ with node/npm. Alternatively, you need [Docker](https://docs.docker.com/engine/i
 Define the following environment variables:
 
 - `IPFS_URL`: *Required*. The IPFS node url to perform all IPFS operations on.
-- `HOST`: *Optional*. The host IP address the server will listen on. Defaults to `127.0.0.1`. Use `0.0.0.0` if you need
-  to make the server publicly available.
+- `HOST`: *Optional*. The host IP address the server will listen on. Defaults to `0.0.0.0`. Use `127.0.0.1` if you need
+  to make the server available only to localhost, or only to other containers if you run with docker.
 - `PORT`: *Optional*. The host port the server will listen on. Defaults to `3001`.
 
 ## Deploy
