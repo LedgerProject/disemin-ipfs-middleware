@@ -13,8 +13,15 @@ The following endpoints are currently available:
 
 - `/ipfs/{cid}`: Returns the telemetry file contents for the given
   IPFS [CID](https://docs.ipfs.io/concepts/content-addressing/) hash.
+
 - `/weather/{geohash}/latest`: Returns the latest weather telemetry stored in IPFS for the
   location's [geohash](https://en.wikipedia.org/wiki/Geohash).
+
+- `/chainlink`: As the above, it returns the latest weather telemetry stored in IPFS for the
+  location's [geohash](https://en.wikipedia.org/wiki/Geohash). However, this endpoint acts as
+  a [Chainlink external adapter](https://docs.chain.link/docs/developers), using the appropriate request/response
+  format. The geohash is passed to the adapter as a POST body, inside the request's `data` object. The weather telemetry
+  is returned again in the `data` object of the response.
 
 ## Prerequisites
 
