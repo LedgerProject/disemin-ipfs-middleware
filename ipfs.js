@@ -3,6 +3,7 @@ const axios = require('axios')
 const logger = require('winston')
 const moment = require('moment')
 const path = require('path')
+const telemetry = require('./telemetry')
 
 // Root folder
 const ROOT_FOLDER = '/weather'
@@ -27,13 +28,6 @@ function throwWithMessage (error, message) {
  */
 function isValid (hash) {
   return _.size(hash) === 46
-}
-
-/**
- * Return true if the data object contains valid telemetry data.
- */
-function isTelemetry (data) {
-  return _.has(data, 'ts') && _.has(data, 'values') && _.has(data, 'geohash')
 }
 
 /**
@@ -68,39 +62,7 @@ function getData (hash) {
  */
 function getTelemetryData (hash) {
   return getData(hash)
-    .then(data => {
-      // Sometimes the hashes are strings...
-      if (_.isString(data)) {
-        // Try to parse as JSON
-        logger.log('debug', `Trying to parse as JSON`)
-        try {
-          data = JSON.parse(data)
-        } catch (error) {
-          throw new Error(`Invalid data: ${data}`)
-        }
-      }
-
-      // Sometimes they don't even contain an object
-      if (!_.isObjectLike(data)) {
-        logger.log('debug', `Data not object-like`)
-        throw new Error(`Invalid data: ${data}`)
-      }
-
-      // Sometimes the hashes contain [] instead of {}...
-      if (_.isArrayLikeObject(data)) {
-        logger.log('debug', `Data is array-like`)
-        data = data[0]
-      }
-
-      // Or sometimes the object does not contain valid telemetry
-      if (!isTelemetry(data)) {
-        logger.log('debug', `Data not telemetry`)
-        throw new Error(`Data is not telemetry: ${JSON.stringify(data)}`)
-      }
-
-      // Sometimes it's correct!
-      return data
-    })
+    .then(data => telemetry.toTelemetry(data))
 }
 
 /**
@@ -153,4 +115,25 @@ function update () {
   return getRootHash().then(hash => publish(hash))
 }
 
-module.exports = { isValid, getData, getTelemetryData, copy, update, getRootHash }
+/**
+ * Return MFS file contents
+ */
+function getLatest (geohash) {
+  if (_.isNil(geohash)) throw new Error('Invalid geohash')
+  let filepath = path.join(ROOT_FOLDER, geohash, LATEST_FILE)
+  return getFile(filepath)
+    .then(data => telemetry.toTelemetry(data))
+    .then(data => telemetry.toWeather(data))
+    .catch(err => throwWithMessage(err, `Could not get latest telemetry for ${geohash}`))
+}
+
+/**
+ * Return MFS file contents
+ */
+function getFile (filepath) {
+  return client.post(`/api/v0/files/read?arg=${filepath}`)
+    .then(response => response.data)
+    .catch(err => throwWithMessage(err, `Could not get file content for ${filepath}`))
+}
+
+module.exports = { isValid, getData, getTelemetryData, copy, update, getRootHash, getLatest }

@@ -21,7 +21,7 @@ router.use(timeout('600s'), (req, res, next) => {
 })
 
 // Handle IPFS hash requests
-router.use('/ipfs/:hash', (req, res, next) => {
+router.post('/ipfs/:hash', (req, res, next) => {
   let hash = req.params.hash
 
   logger.log('info', `Received hash ${hash}`)
@@ -48,7 +48,19 @@ router.use('/ipfs/:hash', (req, res, next) => {
     })
     .then(published => res.json(published))
     .catch(err => {
-      logger.log('error', 'Failed to process request.', err)
+      logger.log('error', `Failed to process hash ${hash}`, err)
+      next(error(500, err.message))
+    })
+})
+
+// Handle IPFS hash requests
+router.get('/weather/:geohash/latest', (req, res, next) => {
+  let geohash = req.params.geohash
+  logger.log('info', `Getting latest for ${geohash}`)
+  return ipfs.getLatest(geohash)
+    .then(data => res.json(data))
+    .catch(err => {
+      logger.log('error', `Failed to get latest for ${geohash}`, err)
       next(error(500, err.message))
     })
 })
