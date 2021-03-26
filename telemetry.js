@@ -42,6 +42,8 @@ function toTelemetry (data) {
     throw new Error(`Data is not telemetry: ${JSON.stringify(data)}`)
   }
 
+  logger.log('debug', `Data is telemetry!`)
+
   // Sometimes it's correct!
   return data
 }
@@ -50,6 +52,7 @@ function toTelemetry (data) {
  * Parse telemetry and return a predefined weather data schema
  */
 function toWeather (telemetry) {
+  logger.log('debug', `Parsing as weather data`)
   return Promise.resolve({
     date: moment(telemetry.ts).toISOString(),
     geohash: telemetry.values.geohash,

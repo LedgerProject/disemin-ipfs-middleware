@@ -1,6 +1,6 @@
 {
   "name": "ledger-ipfs-companion",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "AgroXM IPFS Companion Application Server",
   "main": "index.js",
   "scripts": {

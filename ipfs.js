@@ -34,6 +34,7 @@ function isValid (hash) {
  * Crate all dirs in path, if necessary
  */
 function createDirs (path) {
+  logger.log('debug', `Creating path ${path}`)
   return client.post(`/api/v0/files/mkdir?arg=${path}&parents=true`)
     .then(response => response.data)
     .catch(err => throwWithMessage(err, `Could not create path [${path}]`))
@@ -43,6 +44,7 @@ function createDirs (path) {
  * Get the IPFS hash of the root folder.
  */
 function getRootHash () {
+  logger.log('debug', `Returning root CID`)
   return client.post(`/api/v0/files/stat?arg=${ROOT_FOLDER}`)
     .then(response => _.get(response, 'data.Hash'))
     .catch(err => throwWithMessage(err, `Could not get root folder [${ROOT_FOLDER}] hash`))
@@ -52,6 +54,7 @@ function getRootHash () {
  * Get IPFS hash contents (cat).
  */
 function getData (hash) {
+  logger.log('debug', `Returning data for ${hash}`)
   return client.post(`/api/v0/cat?arg=${hash}`)
     .then(response => response.data)
     .catch(err => throwWithMessage(err, `Could not get hash data [${hash}]`))
@@ -88,12 +91,14 @@ function copy (hash, filename = `${moment().format('YYYYMMDD_HHmmssSSS')}.json`)
 }
 
 function cp (hash, path) {
+  logger.log('debug', `Copying ${hash} contents to ${path}`)
   return client.post(`/api/v0/files/cp?arg=/ipfs/${hash}&arg=${path}`)
     .then(response => response.data)
     .catch(err => throwWithMessage(err, `Could not copy ${hash} to ${path}`))
 }
 
 function rm (path) {
+  logger.log('debug', `Deleting file ${path}`)
   return client.post(`/api/v0/files/rm?arg=${path}`)
     .then(response => response.data)
     .catch(err => err.response.data)
@@ -103,6 +108,7 @@ function rm (path) {
  * Publish hash to IPNS
  */
 function publish (hash, lifetime = `${moment.duration(10, 'years').asHours()}h`) {
+  logger.log('debug', `Publishing ${hash} to IPNS`)
   return client.post(`/api/v0/name/publish?arg=${hash}&lifetime=${lifetime}&allow-offline=true`)
     .then(response => response.data)
     .catch(err => throwWithMessage(err, `Could not publish hash ${hash} to IPNS`))
@@ -112,6 +118,7 @@ function publish (hash, lifetime = `${moment.duration(10, 'years').asHours()}h`)
  * Update IPNS with the latest root folder hash
  */
 function update () {
+  logger.log('debug', `Updating root CID on IPNS`)
   return getRootHash().then(hash => publish(hash))
 }
 
@@ -119,6 +126,7 @@ function update () {
  * Return MFS file contents
  */
 function getLatest (geohash) {
+  logger.log('debug', `Fetching latest telemetry for ${geohash}`)
   if (_.isNil(geohash)) throw new Error('Invalid geohash')
   let filepath = path.join(ROOT_FOLDER, geohash, LATEST_FILE)
   return getFile(filepath)
@@ -129,8 +137,10 @@ function getLatest (geohash) {
 
 /**
  * Return MFS file contents
+ * TODO Look up on IPNS instead?
  */
 function getFile (filepath) {
+  logger.log('debug', `Reading file ${filepath}`)
   return client.post(`/api/v0/files/read?arg=${filepath}`)
     .then(response => response.data)
     .catch(err => throwWithMessage(err, `Could not get file content for ${filepath}`))
