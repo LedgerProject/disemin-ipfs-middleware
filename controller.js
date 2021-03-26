@@ -76,18 +76,12 @@ router.post('/chainlink', chainlink.validator(), (req, res, next) => {
   let geohash = _.get(req, 'body.data.geohash')
 
   if (_.isNil(geohash)) {
-    return next(error(400, `Required param 'data.geohash' is missing`))
+    return chainlink.onError(error(400, `Required param 'data.geohash' is missing`), req, res)
   }
 
   return ipfs.getLatest(geohash)
-    .then(data => res.json({
-      jobRunID: req.body.id,
-      data: data
-    }))
-    .catch(err => {
-      logger.log('error', `Failed to get latest for ${geohash}`, err)
-      next(error(500, err.message))
-    })
+    .then(data => chainlink.onSuccess(data, req, res))
+    .catch(err => chainlink.onError(err, req, res))
 })
 
 module.exports = router
