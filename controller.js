@@ -6,6 +6,7 @@ const express = require('express')
 const logger = require('winston')
 const moment = require('moment')
 const ipfs = require('./ipfs')
+const queue = require('./queue')
 const timeout = require('connect-timeout')
 
 // Create router
@@ -21,7 +22,7 @@ router.use(timeout('600s'), (req, res, next) => {
 })
 
 // Handle IPFS hash requests
-router.use('/ipfs/:hash', (req, res, next) => {
+router.post('/ipfs/:hash', (req, res, next) => {
   let hash = req.params.hash
 
   logger.log('info', `Received hash ${hash}`)
@@ -50,13 +51,19 @@ router.use('/ipfs/:hash', (req, res, next) => {
     })
     .then(() => {
       logger.log('info', 'Publishing updated root folder hash to IPNS')
-      return ipfs.update()
+      queue.queue.push(hash)
+      return res.status(200).end()
     })
-    .then(published => res.json(published))
     .catch(err => {
       logger.log('error', `Failed to process hash ${hash}`, err)
       next(error(err.status || 500, err.message))
     })
+})
+
+// Update root hash on IPNS
+router.post('/ipns/update', (req, res, next) => {
+  queue.queue.push()
+  return res.status(200).end()
 })
 
 // Handle IPFS hash requests
