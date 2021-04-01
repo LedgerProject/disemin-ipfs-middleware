@@ -41,7 +41,7 @@ router.use('/ipfs/:hash', (req, res, next) => {
       }
 
       // Create filename from telemetry data
-      let filename = `/${geohash}/${moment(data.ts).format('YYYYMMDD_HHmmssSSS')}.json`
+      let filename = `/${geohash}/${moment.utc(data.ts).format('YYYYMMDD_HHmmssSSS')}.json`
 
       logger.log('info', `Copying ${hash} to ${filename}`)
 
