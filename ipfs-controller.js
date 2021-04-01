@@ -29,6 +29,7 @@ router.get('/:hash', (req, res, next) => {
   // Get data from IPFS
   ipfs.getData(req.params.hash)
     .then(data => res.json(data))
+    .catch(err => next(err))
 })
 
 /**
