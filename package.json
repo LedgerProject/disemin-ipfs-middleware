@@ -1,6 +1,6 @@
 {
   "name": "ledger-ipfs-companion",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "AgroXM IPFS Companion Application Server",
   "main": "index.js",
   "scripts": {
@@ -11,14 +11,13 @@
   "dependencies": {
     "axios": "^0.21.1",
     "compression": "^1.7.4",
-    "connect-timeout": "^1.9.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "fastq": "^1.11.0",
     "helmet": "^4.4.1",
     "http-errors": "^1.8.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
-    "moment-timezone": "^0.5.33",
     "morgan": "^1.10.0",
     "winston": "^3.3.3"
   },

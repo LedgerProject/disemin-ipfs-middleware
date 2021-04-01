@@ -11,13 +11,17 @@ operations required for proper data storage and retrieval.
 
 The following endpoints are currently available:
 
-- `/ipfs/{cid}`: Returns the telemetry file contents for the given
+- `GET` `/ipfs/{cid}`: Returns the file contents for the given
   IPFS [CID](https://docs.ipfs.io/concepts/content-addressing/) hash.
 
-- `/weather/{geohash}/latest`: Returns the latest weather telemetry stored in IPFS for the
+- `POST` `/ipfs/{cid}`: Triggers the necessary IPFS [CID](https://docs.ipfs.io/concepts/content-addressing/)
+  file organizing operations. The method returns immediately with HTTP status 200 and empty body, and the operations
+  take palce in the background.
+
+- `GET` `/weather/{geohash}/latest`: Returns the latest weather telemetry stored in IPFS for the
   location's [geohash](https://en.wikipedia.org/wiki/Geohash).
 
-- `/chainlink`: As the above, it returns the latest weather telemetry stored in IPFS for the
+- `POST` `/chainlink`: As the above, it returns the latest weather telemetry stored in IPFS for the
   location's [geohash](https://en.wikipedia.org/wiki/Geohash). However, this endpoint acts as
   a [Chainlink external adapter](https://docs.chain.link/docs/developers), using the appropriate request/response
   format. The geohash is passed to the adapter as a POST body, inside the request's `data` object. The weather telemetry
@@ -39,7 +43,7 @@ Define the following environment variables:
 
 ## Deploy
 
-The app is dockerized, so you can run with Docker.
+The server is dockerized, so you can run with Docker.
 
 1. Clone the source code and navigate to the cloned folder
 
