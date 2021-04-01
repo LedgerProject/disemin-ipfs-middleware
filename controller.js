@@ -4,7 +4,6 @@ const compression = require('compression')
 const error = require('http-errors')
 const express = require('express')
 const logger = require('winston')
-const moment = require('moment')
 const ipfs = require('./ipfs')
 const queue = require('./queue')
 const timeout = require('connect-timeout')
@@ -24,11 +23,8 @@ router.use(timeout('600s'), (req, res, next) => {
 // Handle IPFS hash requests
 router.use('/ipfs', require('./ipfs-controller'))
 
-// Update root hash on IPNS
-router.post('/ipns/update', (req, res, next) => {
-  queue.queue.push()
-  return res.status(200).end()
-})
+// Handle PNS requests
+router.use('/ipns', require('./ipns-controller'))
 
 // Handle IPFS hash requests
 router.get('/weather/:geohash/latest', (req, res, next) => {
