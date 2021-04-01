@@ -3,8 +3,8 @@ const error = require('http-errors')
 const express = require('express')
 const logger = require('winston')
 const moment = require('moment')
-const ipfs = require('./ipfs')
-const queue = require('./queue')
+const ipfs = require('../ipfs')
+const queue = require('../queue')
 
 // Create router
 const router = express.Router()

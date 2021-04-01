@@ -39,7 +39,7 @@ Define the following environment variables:
 
 ## Deploy
 
-The app is dockerized, so you can run with Docker.
+The server is dockerized, so you can run with Docker.
 
 1. Clone the source code and navigate to the cloned folder
 
