@@ -5,4 +5,4 @@ require('dotenv').config()
 require('./logger')
 
 // Start app server
-require('./app')
+require('./server')
