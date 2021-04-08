@@ -1,31 +1,22 @@
-# AgroXM IPFS Companion Application
+# IPFS Middleware Application
 
-Middleware application that facilitates AgroxM hardware node transactions with IPFS.
+IPFS is essentially a distributed file system. As a protocol, it allows many file operations (like copy, remove, etc) that typically exist in traditional file systems. These operations are exposed as commands via a CLI or via a HTTP RPC API. Both of these act on a specific IPFS node.
 
-## Intro
+Although very powerful, this protocol requires multiple commands/HTTP API calls for storing data in a way that is meaningful to the “real world”, e.g. using appropriate file names, organizing files in folders with tree structure, publishing CIDs to IPNS, etc. Having an IoT sensor node perform all these operations on its own would be counterintuitive, as the node’s primary focus is data acquisition and storage, using minimal energy and data.
 
-This Node.js application is a HTTP server that listens for weather telemetry data IPFS hashes and handles all IPFS file
-operations required for proper data storage and retrieval.
+The EXM **IPFS Middleware** is a backend (Node.js) application that takes care of all the necessary file operations, after a sensor node stores a file on IPFS. It acts as a lightweight HTTP server that listens for requests from the sensor node. As its primary purpose, once it receives an IPFS CID from a sensor node, the middleware performs all the required IPFS file operations. The sensor node only needs to use a single HTTP API call.
 
-### Endpoints
+## Functionality
 
 The following endpoints are currently available:
 
-- `GET` `/ipfs/{cid}`: Returns the file contents for the given
-  IPFS [CID](https://docs.ipfs.io/concepts/content-addressing/) hash.
+- `GET` `/ipfs/{cid}`: Returns the file contents for the given IPFS [CID](https://docs.ipfs.io/concepts/content-addressing/) hash.
 
-- `POST` `/ipfs/{cid}`: Triggers the necessary IPFS [CID](https://docs.ipfs.io/concepts/content-addressing/)
-  file organizing operations. The method returns immediately with HTTP status 200 and empty body, and the operations
-  take palce in the background.
+- `POST` `/ipfs/{cid}`: Triggers the necessary IPFS [CID](https://docs.ipfs.io/concepts/content-addressing/) file organizing operations. The method returns immediately with HTTP status 200 and empty body, and the operations take palce in the background.
 
-- `GET` `/weather/{geohash}/latest`: Returns the latest weather telemetry stored in IPFS for the
-  location's [geohash](https://en.wikipedia.org/wiki/Geohash).
+- `GET` `/weather/{geohash}/latest`: Returns the latest weather telemetry stored in IPFS for the location's [geohash](https://en.wikipedia.org/wiki/Geohash).
 
-- `POST` `/chainlink`: As the above, it returns the latest weather telemetry stored in IPFS for the
-  location's [geohash](https://en.wikipedia.org/wiki/Geohash). However, this endpoint acts as
-  a [Chainlink external adapter](https://docs.chain.link/docs/developers), using the appropriate request/response
-  format. The geohash is passed to the adapter as a POST body, inside the request's `data` object. The weather telemetry
-  is returned again in the `data` object of the response.
+- `POST` `/chainlink`: As the above, it returns the latest weather telemetry stored in IPFS for the location's [geohash](https://en.wikipedia.org/wiki/Geohash). However, this endpoint acts as a [Chainlink external adapter](https://docs.chain.link/docs/developers), using the appropriate request/response format. The geohash is passed to the adapter as a POST body, inside the request's `data` object. The weather telemetry is returned again in the `data` object of the response.
 
 ## Prerequisites
 
