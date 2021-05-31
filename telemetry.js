@@ -57,7 +57,14 @@ function toWeather (telemetry) {
     date: moment(telemetry.ts).toISOString(),
     geohash: telemetry.values.geohash,
     temperature: _.round(telemetry.values.fo_temp, 1),
-    wind_gust: _.round(telemetry.values.fo_w_gust, 1)
+    wind_speed: _.round(telemetry.values.fo_w_speed, 1),
+    wind_gust: _.round(telemetry.values.fo_w_gust, 1),
+    wind_dir: _.round(telemetry.values.fo_w_dir, 0),
+    precipitation: _.round(telemetry.values.fo_rain, 2),
+    precipitation_rate: _.round(telemetry.values.fo_rain_hr, 2),
+    solar: _.round(telemetry.values.fo_sol_rad, 2),
+    light: _.round(telemetry.values.fo_light, 2),
+    uv_index: _.round(telemetry.values.fo_uv, 0),
   })
 }
 
